@@ -45,7 +45,7 @@ unittest {
     assert(results.max > Duration.min);
     assert(results.min > Duration.min);
     assert(results.mean > Duration.min);
-    assert(results.stdDev > 0.0);
+    assert(results.stdDev >= 0.0);
 }
 
 @("benchmark runs warmup iterations before testing.")
