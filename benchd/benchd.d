@@ -37,7 +37,7 @@ unittest {
 unittest {
     int counter = 0;
     void testFunction() { for (int i; i < 1000; ++i) ++counter; }
-    BenchmarkOptions run = { warmupIterations: 1, benchIterations: 10 };
+    BenchmarkOptions run = { warmupIterations: 0, benchIterations: 10 };
 
     auto results = run.benchmark!(testFunction)();
 
@@ -120,7 +120,7 @@ struct Statistics {
     Duration max = Duration.min;
     Duration min = Duration.min;
     Duration mean = Duration.min;
-    float stdDev = 0.0;
+    float stdDev = -1.0;
 }
 
 
