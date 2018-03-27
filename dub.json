@@ -1,0 +1,11 @@
+{
+    "name": "benchd",
+    "authors": [
+        "Ryan Frame"
+    ],
+    "description": "Microbenchmark framework for D code.",
+    "copyright": "Copyright © 2018 Ryan Frame",
+    "license": "MIT",
+    "sourcePaths": [ "benchd" ],
+    "importPaths": [ "benchd" ]
+}
