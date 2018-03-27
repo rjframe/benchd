@@ -198,32 +198,34 @@ auto meanAndStandardDeviation(Duration[] durations) {
 unittest {
     import std.json : parseJSON;
 
-    int counter = 0;
-    void testFunction() { for (int i; i < 100; ++i) ++counter; }
-    BenchmarkOptions run = { warmupIterations: 0, benchIterations: 10 };
-    auto results = run.benchmark!(testFunction)();
-
+    Statistics results = {
+        runTimes: [
+            8381.dur!"hnsecs",
+            3474.dur!"hnsecs",
+            3478.dur!"hnsecs",
+            3478.dur!"hnsecs",
+            3200.dur!"hnsecs",
+            2658.dur!"hnsecs",
+            2654.dur!"hnsecs",
+            2654.dur!"hnsecs",
+            2658.dur!"hnsecs",
+            2674.dur!"hnsecs"
+        ],
+        max: 8318.dur!"hnsecs",
+        min: 2654.dur!"hnsecs",
+        mean: 3530.dur!"hnsecs",
+        stdDev: 1658.36
+    };
     auto json = parseJSON(results.toJsonString);
-
-    auto scale = json["scale"].str;
-    long multiplier =
-       scale == "usecs" ? 10
-       : scale == "msecs" ? 10_000
-       : scale == "secs" ? 10_000_000
-       : 1;
 
     with(results) {
         auto runs = json["runs"].array;
         for (int i = 0; i < runTimes.length; ++i)
-            assert(runs[i].integer * multiplier == runTimes[i].total!"hnsecs",
-                    runs[i].integer);
+            assert(runs[i].integer == runTimes[i].total!"hnsecs");
 
-        assert(json["max"].integer * multiplier == max.total!"hnsecs",
-                json["max"].integer * multiplier);
-        assert(json["min"].integer * multiplier == min.total!"hnsecs",
-                json["mean"].integer * multiplier);
-        assert(json["mean"].integer * multiplier == mean.total!"hnsecs",
-                json["mean"].integer * multiplier);
+        assert(json["max"].integer == max.total!"hnsecs");
+        assert(json["min"].integer == min.total!"hnsecs");
+        assert(json["mean"].integer == mean.total!"hnsecs");
         assert(approxEqual(json["stdDev"].floating, stdDev));
     }
 }
