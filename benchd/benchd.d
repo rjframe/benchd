@@ -234,38 +234,18 @@ unittest {
 string toJsonString(Statistics stats) {
     import std.format : format;
 
-    enum Scale {
-        secs = "seconds",
-        msecs = "msecs",
-        usecs = "usecs",
-        hnsecs = "hnsecs"
-    }
-
-    auto scale =
-        stats.min >= 1.dur!"seconds" ? Scale.secs
-        : stats.min >= 1.dur!"msecs" ? Scale.msecs
-        : stats.min >= 1.dur!"usecs" ? Scale.usecs
-        : Scale.hnsecs;
-
-    long multiplier =
-       scale == Scale.usecs ? 10
-       : scale == Scale.msecs ? 10_000
-       : scale == Scale.secs ? 10_000_000
-       : 1;
-
     // TODO: Do this efficiently.
     char[] json = cast(char[])"{";
-    json ~= `"scale":"%s",`.format(scale);
     json ~= `"runs":[`;
     foreach (time; stats.runTimes) {
-        json ~= "%s,".format(time.total!"hnsecs" * multiplier);
+        json ~= "%s,".format(time.total!"hnsecs");
     }
     json[$-1] = ']';
     json ~= ",";
 
-    json ~= `"max":%s,`.format(stats.max.total!"hnsecs" * multiplier);
-    json ~= `"min":%s,`.format(stats.min.total!"hnsecs" * multiplier);
-    json ~= `"mean":%s,`.format(stats.mean.total!"hnsecs" * multiplier);
+    json ~= `"max":%s,`.format(stats.max.total!"hnsecs");
+    json ~= `"min":%s,`.format(stats.min.total!"hnsecs");
+    json ~= `"mean":%s,`.format(stats.mean.total!"hnsecs");
     json ~= `"stdDev":%f`.format(stats.stdDev);
 
     json ~= "}";
