@@ -13,6 +13,15 @@ struct BenchmarkOptions {
 }
 
 
+/** Prevent the passed items from being optimized out of the loop/benchmark. */
+void keepThis(OBJ...)(ref OBJ objs) {
+    import core.thread : getpid;
+    foreach (obj; objs) {
+        if (getpid == 1) obj = obj.init;
+    }
+}
+
+
 @("benchmark runs the function provided to it.")
 unittest {
     bool funcHasRun = false;
@@ -95,6 +104,7 @@ auto benchmark(alias func, ARGS...)(BenchmarkOptions options, ARGS args) in {
 ///
 unittest {
     void funcToTest(string param1, int param2) {
+        keepThis(param1, param2);
         // Code goes here...
     }
 
@@ -104,6 +114,7 @@ unittest {
     // Or pass an anonymous function.
     results = run.benchmark!(
         (string param1, int param2) {
+            keepThis(param1, param2);
             // Code goes here...
         }
     )("text parameter", 16);
