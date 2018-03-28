@@ -1,6 +1,8 @@
 module benchd.benchd;
 
 import core.time;
+import std.range : isRandomAccessRange, SortedRange;
+import std.traits : isInstanceOf;
 
 
 /** Set options to control the behavior of the benchmark function. */
@@ -54,6 +56,7 @@ unittest {
     assert(results.max > Duration.min);
     assert(results.min > Duration.min);
     assert(results.mean > Duration.min);
+    assert(results.median > Duration.min);
     assert(results.stdDev >= 0.0);
 }
 
@@ -131,6 +134,7 @@ struct Statistics {
     Duration max = Duration.min;
     Duration min = Duration.min;
     Duration mean = Duration.min;
+    Duration median = Duration.min;
     float stdDev = -1.0;
 }
 
@@ -143,15 +147,18 @@ struct Statistics {
 auto collectStatistics(Duration[] results) {
     import std.algorithm.comparison : max, min;
     import std.algorithm.iteration : fold;
+    import std.algorithm.sorting : sort;
 
     auto maxmin = fold!(max, min)(results);
     auto meanAndStdDev = meanAndStandardDeviation(results);
+    auto median_ = results.sort().median();
 
     Statistics stats = {
         runTimes: results,
         max: maxmin[0],
         min: maxmin[1],
         mean: meanAndStdDev[0],
+        median: median_,
         stdDev: meanAndStdDev[1]
     };
     return stats;
@@ -202,6 +209,33 @@ auto meanAndStandardDeviation(Duration[] durations) {
     auto stddev = sqrt((cast(float)sums[1] / durations.length) - mean*mean);
 
     return tuple(mean.dur!"hnsecs", stddev);
+}
+
+
+@("Calculate the median values of a sorted range's elements.")
+unittest {
+    import std.range : assumeSorted;
+    long[] a = [1, 2, 2, 3, 4, 5, 7];
+    long[] b = [1, 2, 2, 3, 5, 5, 5, 7];
+
+    assert(median(a.assumeSorted) == 3);
+    assert(median(b.assumeSorted) == 4);
+}
+
+/** Calculate the median of an array of values. */
+auto median(R)(R durations)
+        if (isRandomAccessRange!R && isInstanceOf!(SortedRange, R)) {
+
+    if (durations.length == 1) return durations[0];
+
+    auto firstLoc = durations.length / 2;
+    auto first = durations[firstLoc];
+
+    if (durations.length % 2 != 0) {
+        return first;
+    }
+    auto second = durations[firstLoc - 1];
+    return ((first + second) / 2);
 }
 
 
